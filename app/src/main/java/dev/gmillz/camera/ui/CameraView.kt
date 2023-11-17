@@ -4,6 +4,7 @@ import androidx.camera.core.CameraSelector
 import androidx.camera.view.PreviewView
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -22,12 +23,14 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
+import coil.compose.AsyncImage
 
 @Composable
 fun CameraView(
@@ -92,6 +95,23 @@ fun CameraView(
                     contentDescription = null,
                     modifier = Modifier
                         .size(60.dp)
+                )
+            }
+
+            IconButton(
+                modifier = Modifier
+                    .padding(end = 30.dp)
+                    .size(60.dp)
+                    .align(Alignment.CenterEnd),
+                onClick = { /*TODO*/ }
+            ) {
+                AsyncImage(
+                    model = cameraViewModel.lastCapturedItemState.value?.uri,
+                    contentDescription = null,
+                    modifier = Modifier
+                        .clip(CircleShape)
+                        .size(60.dp)
+                        .border(2.dp, Color.White, CircleShape)
                 )
             }
         }

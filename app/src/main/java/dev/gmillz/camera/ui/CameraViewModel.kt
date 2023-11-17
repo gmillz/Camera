@@ -1,6 +1,7 @@
 package dev.gmillz.camera.ui
 
 import androidx.camera.core.Preview.SurfaceProvider
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -13,6 +14,15 @@ class CameraViewModel @Inject constructor(
     private val imageCapturer: ImageCapturer,
     private val camConfig: CamConfig
 ) : ViewModel() {
+
+    private val _lastCapturedItemState = mutableStateOf(camConfig.lastCapturedItem.value)
+    val lastCapturedItemState = _lastCapturedItemState
+
+    init {
+        camConfig.lastCapturedItem.observeForever {
+            _lastCapturedItemState.value = it
+        }
+    }
 
     fun captureImage() {
         imageCapturer.takePicture()

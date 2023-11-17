@@ -1,8 +1,10 @@
 package dev.gmillz.camera
 
 import android.content.Context
+import android.content.SharedPreferences
 import android.hardware.camera2.CameraCharacteristics
 import android.hardware.camera2.CameraManager
+import android.net.Uri
 import androidx.camera.core.Camera
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
@@ -12,13 +14,17 @@ import androidx.camera.core.UseCaseGroup
 import androidx.camera.extensions.ExtensionsManager
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
+import androidx.core.content.edit
 import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.MutableLiveData
+import dev.gmillz.camera.capturer.CapturedItem
 import java.util.concurrent.ExecutionException
 
 class CamConfig(private val context: Context) {
 
     private var lensFacing = CameraSelector.LENS_FACING_BACK
     var camera: Camera? = null
+    var lastCapturedItem: MutableLiveData<CapturedItem?> = MutableLiveData()
     private var cameraProvider: ProcessCameraProvider? = null
     private var extensionsManager: ExtensionsManager? = null
     var imageCapture: ImageCapture? = null
@@ -27,9 +33,35 @@ class CamConfig(private val context: Context) {
     private var lifecycleOwner: LifecycleOwner? = null
     private var surfaceProvider: SurfaceProvider? = null
 
+    val sharedPrefs: SharedPreferences = context.getSharedPreferences("camera", 0)
     private val cameraManager = context.getSystemService(CameraManager::class.java)
 
     private lateinit var cameraSelector: CameraSelector
+
+    init {
+        loadLastCapturedItem()
+    }
+
+    private fun loadLastCapturedItem() {
+        val type = sharedPrefs.getInt(SettingValues.Key.LAST_CAPTURED_ITEM_TYPE, -1)
+        val dateStr = sharedPrefs.getString(SettingValues.Key.LAST_CAPTURED_ITEM_DATE_STRING, null)
+        val uri = sharedPrefs.getString(SettingValues.Key.LAST_CAPTURED_ITEM_URI, null)
+
+        var item: CapturedItem? = null
+        if (dateStr != null && uri != null) {
+            item = CapturedItem(type, dateStr, Uri.parse(uri))
+        }
+        lastCapturedItem.postValue(item)
+    }
+
+    fun updateLastCapturedItem(item: CapturedItem) {
+        sharedPrefs.edit {
+            putInt(SettingValues.Key.LAST_CAPTURED_ITEM_TYPE, item.type)
+            putString(SettingValues.Key.LAST_CAPTURED_ITEM_DATE_STRING, item.dateString)
+            putString(SettingValues.Key.LAST_CAPTURED_ITEM_URI, item.uri.toString())
+        }
+        lastCapturedItem.postValue(item)
+    }
 
     fun toggleCameraSelector() {
         lensFacing = if (lensFacing == CameraSelector.LENS_FACING_BACK) {

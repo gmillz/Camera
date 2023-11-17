@@ -111,8 +111,8 @@ class ImageSaver(
 
             removePendingFlagFromUri(contentResolver, uri)
 
-            //val capturedItem = CapturedItem(ITEM_TYPE_IMAGE, dateString(), uri)
-            //context.mainExecutor.execute { imageCapturer.onImageSaverSuccess(capturedItem) }
+            val capturedItem = CapturedItem(ITEM_TYPE_IMAGE, dateString(), uri)
+            context.mainExecutor.execute { imageCapturer.onImageSaverSuccess(capturedItem) }
 
         } catch (e: Exception) {
             e.printStackTrace()

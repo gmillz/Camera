@@ -25,4 +25,8 @@ class ImageCapturer(private val context: Context, private val camConfig: CamConf
         // unfade
 
     }
+
+    fun onImageSaverSuccess(item: CapturedItem) {
+        camConfig.updateLastCapturedItem(item)
+    }
 }
