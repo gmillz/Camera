@@ -13,6 +13,7 @@ import androidx.camera.core.Preview.SurfaceProvider
 import androidx.camera.core.UseCaseGroup
 import androidx.camera.extensions.ExtensionsManager
 import androidx.camera.lifecycle.ProcessCameraProvider
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.core.content.ContextCompat
 import androidx.core.content.edit
 import androidx.lifecycle.LifecycleOwner
@@ -37,6 +38,27 @@ class CamConfig(private val context: Context) {
     private val cameraManager = context.getSystemService(CameraManager::class.java)
 
     private lateinit var cameraSelector: CameraSelector
+
+    private val isFlashAvailable: Boolean
+        get() {
+            return camera?.cameraInfo?.hasFlashUnit()?: false
+        }
+
+    val flashModeState = mutableIntStateOf(flashMode)
+    private var flashMode: Int
+        get() {
+            return if (imageCapture != null)
+                imageCapture!!.flashMode
+            else
+                SettingValues.Default.FLASH_MODE
+        }
+        set(flashMode) {
+            sharedPrefs.edit {
+                putInt(SettingValues.Key.FLASH_MODE, flashMode)
+            }
+            imageCapture?.flashMode = flashMode
+            flashModeState.intValue = flashMode
+        }
 
     init {
         loadLastCapturedItem()
@@ -80,6 +102,16 @@ class CamConfig(private val context: Context) {
                 CameraSelector.LENS_FACING_FRONT
             } else {
                 CameraSelector.LENS_FACING_BACK
+            }
+        }
+    }
+
+    fun toggleFlashMode() {
+        if (isFlashAvailable) {
+            flashMode = when (flashMode) {
+                ImageCapture.FLASH_MODE_OFF -> ImageCapture.FLASH_MODE_ON
+                ImageCapture.FLASH_MODE_ON -> ImageCapture.FLASH_MODE_AUTO
+                else -> ImageCapture.FLASH_MODE_OFF
             }
         }
     }
