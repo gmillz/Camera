@@ -1,6 +1,5 @@
 package dev.gmillz.camera.ui
 
-import android.util.Log
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
 import androidx.camera.view.PreviewView
@@ -22,15 +21,11 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.sharp.ArrowDropDown
-import androidx.compose.material.icons.sharp.AspectRatio
 import androidx.compose.material.icons.sharp.FlashAuto
 import androidx.compose.material.icons.sharp.FlashOff
 import androidx.compose.material.icons.sharp.FlashOn
-import androidx.compose.material.icons.sharp.FlashlightOn
 import androidx.compose.material.icons.sharp.FlipCameraAndroid
-import androidx.compose.material.icons.sharp.GridOn
 import androidx.compose.material.icons.sharp.Lens
-import androidx.compose.material.icons.sharp.LocationOn
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -40,9 +35,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -55,7 +48,6 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
-import dev.gmillz.camera.ui.components.DropdownList
 
 @Composable
 fun CameraView(
@@ -256,7 +248,7 @@ fun CameraView(
 
             Divider(modifier = Modifier.height(1.dp))
 
-            /*Row(
+            Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(40.dp)
@@ -271,7 +263,7 @@ fun CameraView(
                 RadioButton(
                     selected = false,
                     onClick = {
-                        //cameraViewModel.toggleMaximizeQuality(true)
+                        cameraViewModel.toggleMaximizeQuality(true)
                     }
                 )
 
@@ -284,7 +276,7 @@ fun CameraView(
                 RadioButton(
                     selected = true,
                     onClick = {
-                        //cameraViewModel.toggleMaximizeQuality(false)
+                        cameraViewModel.toggleMaximizeQuality(false)
                     }
                 )
 
@@ -293,7 +285,7 @@ fun CameraView(
                     color = MaterialTheme.colorScheme.onBackground,
                     fontSize = 20.sp
                 )
-            }*/
+            }
 
             /*Row(
                 modifier = Modifier

@@ -23,6 +23,7 @@ class CameraViewModel @Inject constructor(
     val settingsOpen: State<Boolean> = _settingsOpen
 
     val flashMode: State<Int> = camConfig.flashModeState
+    val maximizeQuality: State<Boolean> = camConfig.maximizeQualityState
 
     init {
         camConfig.lastCapturedItem.observeForever {
@@ -44,6 +45,10 @@ class CameraViewModel @Inject constructor(
 
     fun toggleFlashMode() {
         camConfig.toggleFlashMode()
+    }
+
+    fun toggleMaximizeQuality(maximizeQuality: Boolean) {
+        camConfig.toggleMaximizeQuality(maximizeQuality)
     }
 
     fun initializeCamera(lifecycleOwner: LifecycleOwner, surfaceProvider: SurfaceProvider) {

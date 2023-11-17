@@ -14,6 +14,7 @@ import androidx.camera.core.UseCaseGroup
 import androidx.camera.extensions.ExtensionsManager
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.core.content.ContextCompat
 import androidx.core.content.edit
 import androidx.lifecycle.LifecycleOwner
@@ -58,6 +59,21 @@ class CamConfig(private val context: Context) {
             }
             imageCapture?.flashMode = flashMode
             flashModeState.intValue = flashMode
+        }
+
+    val maximizeQualityState = mutableStateOf(maximizeQuality)
+    private var maximizeQuality: Boolean
+        get() {
+            return sharedPrefs.getBoolean(
+                SettingValues.Key.MAXIMIZE_QUALITY,
+                SettingValues.Default.MAXIMIZE_QUALITY
+            )
+        }
+        set(value) {
+            sharedPrefs.edit {
+                putBoolean(SettingValues.Key.MAXIMIZE_QUALITY, value)
+            }
+            maximizeQualityState.value = value
         }
 
     init {
@@ -113,6 +129,13 @@ class CamConfig(private val context: Context) {
                 ImageCapture.FLASH_MODE_ON -> ImageCapture.FLASH_MODE_AUTO
                 else -> ImageCapture.FLASH_MODE_OFF
             }
+        }
+    }
+
+    fun toggleMaximizeQuality(maximizeQuality: Boolean) {
+        this.maximizeQuality = maximizeQuality
+        if (lifecycleOwner != null && surfaceProvider != null) {
+            startCamera(lifecycleOwner!!, surfaceProvider!!, true)
         }
     }
 
@@ -174,7 +197,13 @@ class CamConfig(private val context: Context) {
         }
 
         imageCapture = ImageCapture.Builder()
-            .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
+            .setCaptureMode(
+                if (maximizeQuality) {
+                    ImageCapture.CAPTURE_MODE_MAXIMIZE_QUALITY
+                } else {
+                    ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY
+                }
+            )
             .setFlashMode(ImageCapture.FLASH_MODE_OFF)
             .build().also {
                 useCaseGroupBuilder.addUseCase(it)

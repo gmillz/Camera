@@ -10,9 +10,11 @@ object SettingValues {
         const val LAST_CAPTURED_ITEM_URI = "last_captured_item_uri"
 
         const val FLASH_MODE = "flash_mode"
+        const val MAXIMIZE_QUALITY = "maximize_quality"
     }
 
     object Default {
         const val FLASH_MODE = ImageCapture.FLASH_MODE_OFF
+        const val MAXIMIZE_QUALITY = true
     }
 }
