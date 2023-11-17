@@ -1,11 +1,6 @@
 package dev.gmillz.camera.ui
 
-import android.net.Uri
-import android.util.Log
 import androidx.camera.core.CameraSelector
-import androidx.camera.core.ImageCapture
-import androidx.camera.core.ImageCaptureException
-import androidx.camera.core.Preview
 import androidx.camera.view.PreviewView
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
@@ -27,39 +22,20 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
-import dev.gmillz.camera.getCameraProvider
-import java.io.File
-import java.util.concurrent.Executor
+import androidx.hilt.navigation.compose.hiltViewModel
 
 @Composable
 fun CameraView(
-    outputDirectory: File,
-    executor: Executor,
-    onImageCaptured: (Uri) -> Unit,
-    onError: (ImageCaptureException) -> Unit
+    cameraViewModel: CameraViewModel = hiltViewModel()
 ) {
     val lensFacing = CameraSelector.LENS_FACING_BACK
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
 
-    val preview = Preview.Builder().build()
     val previewView = remember { PreviewView(context) }
-    val imageCapture: ImageCapture = remember { ImageCapture.Builder().build() }
-    val cameraSelector = CameraSelector.Builder()
-        .requireLensFacing(lensFacing)
-        .build()
 
     LaunchedEffect(lensFacing) {
-        val cameraProvider = context.getCameraProvider()
-        cameraProvider.unbindAll()
-        cameraProvider.bindToLifecycle(
-            lifecycleOwner,
-            cameraSelector,
-            preview,
-            imageCapture
-        )
-
-        preview.setSurfaceProvider(previewView.surfaceProvider)
+        cameraViewModel.initializeCamera(lifecycleOwner, previewView.surfaceProvider)
     }
 
     Box(
@@ -73,7 +49,7 @@ fun CameraView(
 
         IconButton(
             onClick = {
-                Log.d("TEST", "take picture")
+                cameraViewModel.captureImage()
             },
             modifier = Modifier.padding(bottom = 20.dp)
         ) {
