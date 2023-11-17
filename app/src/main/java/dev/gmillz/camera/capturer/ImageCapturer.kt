@@ -18,7 +18,7 @@ class ImageCapturer(private val context: Context, private val camConfig: CamConf
             context = context
         )
 
-        imageCapture.takePicture(ImageSaver.imageCaptureCallbackExecutor, imageSaver)
+        imageCapture?.takePicture(ImageSaver.imageCaptureCallbackExecutor, imageSaver)
     }
 
     fun onCaptureSuccess() {

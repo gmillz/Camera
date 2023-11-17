@@ -18,6 +18,10 @@ class CameraViewModel @Inject constructor(
         imageCapturer.takePicture()
     }
 
+    fun toggleCamera() {
+        camConfig.toggleCameraSelector()
+    }
+
     fun initializeCamera(lifecycleOwner: LifecycleOwner, surfaceProvider: SurfaceProvider) {
         camConfig.initializeCamera(lifecycleOwner, surfaceProvider)
     }
