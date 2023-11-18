@@ -29,6 +29,7 @@ class CameraViewModel @Inject constructor(
     val maximizeQuality: State<Boolean> = camConfig.maximizeQualityState
     val currentMode: State<CameraMode> = camConfig.currentModeState
     val isRecording: State<Boolean> = videoCapturer.isRecording
+    val elapsedTime: State<String> = videoCapturer.timer.elapsedTime
 
     init {
         camConfig.lastCapturedItem.observeForever {

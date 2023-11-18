@@ -17,6 +17,7 @@ import dev.gmillz.camera.CamConfig
 import dev.gmillz.camera.DEFAULT_MEDIA_STORE_CAPTURE_PATH
 import dev.gmillz.camera.VIDEO_NAME_PREFIX
 import dev.gmillz.camera.removePendingFlagFromUri
+import dev.gmillz.camera.util.Timer
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -28,6 +29,8 @@ class VideoCapturer(private val context: Context, private val camConfig: CamConf
     private val videoFileFormat = ".mp4"
 
     private var recording: Recording? = null
+
+    val timer = Timer()
 
     fun startRecording() {
         Log.d("TEST", "startRecording")
@@ -76,9 +79,10 @@ class VideoCapturer(private val context: Context, private val camConfig: CamConf
         //keepScreenOn
         isRecording.value = true
         // TODO add shutter sounds
-        //startTimer()
+        timer.start()
         recording = pendingRecording?.start(context.mainExecutor) { event ->
             if (event is VideoRecordEvent.Finalize) {
+                timer.stop()
                 // stop keepScreenOn
                 isRecording.value = false
                 // TODO add shutter sounds

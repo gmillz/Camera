@@ -71,6 +71,7 @@ fun CameraView(
     val flashMode by remember { cameraViewModel.flashMode }
     val cameraMode by remember { cameraViewModel.currentMode }
     val isRecording by remember { cameraViewModel.isRecording }
+    val elapsedTime by remember { cameraViewModel.elapsedTime }
 
     val settingButtonAlpha: Float by animateFloatAsState(
         targetValue = if (!settingsOpen) 1f else 0f,
@@ -199,22 +200,33 @@ fun CameraView(
             }
 
             var selectedTabPosition by remember { mutableIntStateOf(0) }
-            TabRow(
-                selectedTabPosition = selectedTabPosition,
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .padding(bottom = 5.dp),
-                containerShape = RectangleShape,
-            ) {
-                cameraViewModel.getAvailableCameraModes().forEachIndexed { index, cameraMode ->
-                    TabTitle(
-                        title = stringResource(id = cameraMode.title),
-                        position = index,
-                        onClick = {
-                            selectedTabPosition = index
-                            cameraViewModel.setCameraMode(cameraMode)
-                        }
-                    )
+            if (elapsedTime.isNotEmpty()) {
+                Text(
+                    text = elapsedTime,
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .padding(10.dp)
+                        .padding(bottom = 5.dp)
+                        .background(color = Color.Red, shape = CircleShape)
+                )
+            } else {
+                TabRow(
+                    selectedTabPosition = selectedTabPosition,
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .padding(bottom = 5.dp),
+                    containerShape = RectangleShape,
+                ) {
+                    cameraViewModel.getAvailableCameraModes().forEachIndexed { index, cameraMode ->
+                        TabTitle(
+                            title = stringResource(id = cameraMode.title),
+                            position = index,
+                            onClick = {
+                                selectedTabPosition = index
+                                cameraViewModel.setCameraMode(cameraMode)
+                            }
+                        )
+                    }
                 }
             }
         }
