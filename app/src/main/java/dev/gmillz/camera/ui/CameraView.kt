@@ -2,6 +2,7 @@ package dev.gmillz.camera.ui
 
 import android.util.Log
 import android.view.MotionEvent
+import androidx.camera.core.AspectRatio
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
 import androidx.camera.view.PreviewView
@@ -59,6 +60,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import dev.gmillz.camera.CameraMode
+import dev.gmillz.camera.R
 import dev.gmillz.camera.ui.components.FocusRing
 import dev.gmillz.camera.ui.components.TabRow
 import dev.gmillz.camera.ui.components.TabTitle
@@ -80,6 +82,8 @@ fun CameraView(
     val cameraMode by remember { cameraViewModel.currentMode }
     val isRecording by remember { cameraViewModel.isRecording }
     val elapsedTime by remember { cameraViewModel.elapsedTime }
+    val aspectRatio by remember { cameraViewModel.aspectRatio }
+
     var x by remember { mutableFloatStateOf(0f) }
     var y by remember { mutableFloatStateOf(0f) }
 
@@ -308,15 +312,25 @@ fun CameraView(
                     )
                 }*/
 
-                /*IconButton(
-                    onClick = { /*TODO*/ }
+                IconButton(
+                    onClick = {
+                        cameraViewModel.toggleAspectRatio()
+                     },
+                    modifier = Modifier
+                        .size(46.dp)
+                        .background(
+                            color = MaterialTheme.colorScheme.onBackground,
+                            shape = CircleShape
+                        )
                 ) {
-                    Icon(
-                        imageVector = Icons.Sharp.AspectRatio,
-                        tint = MaterialTheme.colorScheme.onBackground,
-                        contentDescription = null
+                    Text(
+                        text = if (aspectRatio == AspectRatio.RATIO_16_9) {
+                            stringResource(id = R.string.aspect_ratio_16_9)
+                        } else {
+                            stringResource(id = R.string.aspect_ratio_4_3)
+                        }
                     )
-                }*/
+                }
 
                 /*IconButton(
                     onClick = { /*TODO*/ }

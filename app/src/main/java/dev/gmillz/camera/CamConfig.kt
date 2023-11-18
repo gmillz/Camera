@@ -6,12 +6,15 @@ import android.hardware.camera2.CameraCharacteristics
 import android.hardware.camera2.CameraManager
 import android.net.Uri
 import android.util.Log
+import androidx.camera.core.AspectRatio
 import androidx.camera.core.Camera
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.Preview
 import androidx.camera.core.Preview.SurfaceProvider
 import androidx.camera.core.UseCaseGroup
+import androidx.camera.core.resolutionselector.AspectRatioStrategy
+import androidx.camera.core.resolutionselector.ResolutionSelector
 import androidx.camera.extensions.ExtensionMode
 import androidx.camera.extensions.ExtensionsManager
 import androidx.camera.lifecycle.ProcessCameraProvider
@@ -101,6 +104,22 @@ class CamConfig(private val context: Context) {
             maximizeQualityState.value = value
         }
 
+    var aspectRatio: Int
+        get() {
+            return when (currentMode) {
+                CameraMode.VIDEO -> AspectRatio.RATIO_16_9
+                else -> sharedPrefs.getInt(SettingValues.Key.ASPECT_RATIO,
+                    SettingValues.Default.ASPECT_RATIO)
+            }
+        }
+        set(value) {
+            sharedPrefs.edit {
+                putInt(SettingValues.Key.ASPECT_RATIO, value)
+            }
+            aspectRatioState.value = value
+        }
+    val aspectRatioState = mutableIntStateOf(aspectRatio)
+
     init {
         loadLastCapturedItem()
     }
@@ -147,6 +166,14 @@ class CamConfig(private val context: Context) {
             putString(SettingValues.Key.LAST_CAPTURED_ITEM_URI, item.uri.toString())
         }
         lastCapturedItem.postValue(item)
+    }
+
+    fun toggleAspectRatio() {
+        aspectRatio = if (aspectRatio == AspectRatio.RATIO_16_9) {
+            AspectRatio.RATIO_4_3
+        } else {
+            AspectRatio.RATIO_16_9
+        }
     }
 
     fun toggleCameraSelector() {
@@ -236,6 +263,9 @@ class CamConfig(private val context: Context) {
         }.build()
 
         val useCaseGroupBuilder = UseCaseGroup.Builder()
+        val aspectRatioStrategy = AspectRatioStrategy(
+            aspectRatio, AspectRatioStrategy.FALLBACK_RULE_AUTO
+        )
 
         if (currentMode == CameraMode.VIDEO) {
             videoCapture = VideoCapture.withOutput(
@@ -260,6 +290,11 @@ class CamConfig(private val context: Context) {
                 } else {
                     ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY
                 }
+            )
+            .setResolutionSelector(
+                ResolutionSelector.Builder()
+                    .setAspectRatioStrategy(aspectRatioStrategy)
+                    .build()
             )
             .setFlashMode(ImageCapture.FLASH_MODE_OFF)
             .build().also {

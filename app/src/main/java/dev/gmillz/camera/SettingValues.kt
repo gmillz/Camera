@@ -13,11 +13,13 @@ object SettingValues {
 
         const val FLASH_MODE = "flash_mode"
         const val MAXIMIZE_QUALITY = "maximize_quality"
+        const val ASPECT_RATIO = "aspect_ratio"
     }
 
     object Default {
         const val FLASH_MODE = ImageCapture.FLASH_MODE_OFF
         const val MAXIMIZE_QUALITY = true
         val VIDEO_QUALITY: Quality = Quality.HIGHEST
+        val ASPECT_RATIO = AspectRatio.RATIO_4_3
     }
 }

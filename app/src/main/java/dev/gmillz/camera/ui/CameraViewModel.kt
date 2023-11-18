@@ -32,6 +32,7 @@ class CameraViewModel @Inject constructor(
     val currentMode: State<CameraMode> = camConfig.currentModeState
     val isRecording: State<Boolean> = videoCapturer.isRecording
     val elapsedTime: State<String> = videoCapturer.timer.elapsedTime
+    val aspectRatio: State<Int> = camConfig.aspectRatioState
 
     init {
         camConfig.lastCapturedItem.observeForever {
@@ -41,6 +42,10 @@ class CameraViewModel @Inject constructor(
 
     fun setCameraMode(mode: CameraMode) {
         camConfig.switchCameraMode(mode)
+    }
+
+    fun toggleAspectRatio() {
+        camConfig.toggleAspectRatio()
     }
 
     fun startFocusAndMetering(x: Float, y: Float, width: Float, height: Float) {
