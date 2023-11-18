@@ -5,14 +5,20 @@ import android.content.SharedPreferences
 import android.hardware.camera2.CameraCharacteristics
 import android.hardware.camera2.CameraManager
 import android.net.Uri
+import android.util.Log
 import androidx.camera.core.Camera
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.Preview
 import androidx.camera.core.Preview.SurfaceProvider
 import androidx.camera.core.UseCaseGroup
+import androidx.camera.extensions.ExtensionMode
 import androidx.camera.extensions.ExtensionsManager
 import androidx.camera.lifecycle.ProcessCameraProvider
+import androidx.camera.video.Quality
+import androidx.camera.video.QualitySelector
+import androidx.camera.video.Recorder
+import androidx.camera.video.VideoCapture
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.core.content.ContextCompat
@@ -22,6 +28,11 @@ import androidx.lifecycle.MutableLiveData
 import dev.gmillz.camera.capturer.CapturedItem
 import java.util.concurrent.ExecutionException
 
+enum class CameraMode(val extensionMode: Int, val title: Int) {
+    CAMERA(ExtensionMode.NONE, R.string.camera),
+    VIDEO(ExtensionMode.NONE, R.string.video),
+}
+
 class CamConfig(private val context: Context) {
 
     private var lensFacing = CameraSelector.LENS_FACING_BACK
@@ -30,7 +41,10 @@ class CamConfig(private val context: Context) {
     private var cameraProvider: ProcessCameraProvider? = null
     private var extensionsManager: ExtensionsManager? = null
     var imageCapture: ImageCapture? = null
+    var videoCapture: VideoCapture<Recorder>? = null
     private var preview: Preview? = null
+
+    var videoQuality: Quality = SettingValues.Default.VIDEO_QUALITY
 
     private var lifecycleOwner: LifecycleOwner? = null
     private var surfaceProvider: SurfaceProvider? = null
@@ -39,6 +53,17 @@ class CamConfig(private val context: Context) {
     private val cameraManager = context.getSystemService(CameraManager::class.java)
 
     private lateinit var cameraSelector: CameraSelector
+
+    private var _currentMode: CameraMode = CameraMode.CAMERA
+    val currentModeState = mutableStateOf(_currentMode)
+    var currentMode: CameraMode
+        get() {
+            return _currentMode
+        }
+        set(value) {
+            currentModeState.value = value
+            _currentMode = value
+        }
 
     private val isFlashAvailable: Boolean
         get() {
@@ -78,6 +103,29 @@ class CamConfig(private val context: Context) {
 
     init {
         loadLastCapturedItem()
+    }
+
+    fun availableModes(): List<CameraMode> {
+        return CameraMode.values().filter {
+            when (it) {
+                CameraMode.CAMERA, CameraMode.VIDEO -> true
+                else -> {
+                    check(it.extensionMode != ExtensionMode.NONE)
+                    extensionsManager?.isExtensionAvailable(cameraSelector, it.extensionMode)?: false
+                }
+            }
+        }
+    }
+
+    fun switchCameraMode(mode: CameraMode) {
+        if (currentMode == mode) {
+            return
+        }
+        currentMode = mode
+        Log.d("TEST", "mode - ${currentMode.name}")
+        if (lifecycleOwner != null && surfaceProvider != null) {
+            startCamera(lifecycleOwner!!, surfaceProvider!!, true)
+        }
     }
 
     private fun loadLastCapturedItem() {
@@ -188,6 +236,15 @@ class CamConfig(private val context: Context) {
         }.build()
 
         val useCaseGroupBuilder = UseCaseGroup.Builder()
+
+        if (currentMode == CameraMode.VIDEO) {
+            videoCapture = VideoCapture.withOutput(
+                Recorder.Builder()
+                    .setQualitySelector(QualitySelector.from(videoQuality))
+                    .build()
+            )
+            useCaseGroupBuilder.addUseCase(videoCapture!!)
+        }
 
         val previewBuilder = Preview.Builder()
 

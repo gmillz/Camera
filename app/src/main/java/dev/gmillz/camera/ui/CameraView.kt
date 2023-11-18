@@ -26,6 +26,7 @@ import androidx.compose.material.icons.sharp.FlashOff
 import androidx.compose.material.icons.sharp.FlashOn
 import androidx.compose.material.icons.sharp.FlipCameraAndroid
 import androidx.compose.material.icons.sharp.Lens
+import androidx.compose.material.icons.sharp.StopCircle
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -35,19 +36,26 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
+import dev.gmillz.camera.CameraMode
+import dev.gmillz.camera.ui.components.TabRow
+import dev.gmillz.camera.ui.components.TabTitle
 
 @Composable
 fun CameraView(
@@ -61,6 +69,8 @@ fun CameraView(
 
     val settingsOpen by remember { cameraViewModel.settingsOpen }
     val flashMode by remember { cameraViewModel.flashMode }
+    val cameraMode by remember { cameraViewModel.currentMode }
+    val isRecording by remember { cameraViewModel.isRecording }
 
     val settingButtonAlpha: Float by animateFloatAsState(
         targetValue = if (!settingsOpen) 1f else 0f,
@@ -119,21 +129,33 @@ fun CameraView(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(150.dp)
+                .height(160.dp)
                 .background(MaterialTheme.colorScheme.background)
         ) {
             IconButton(
                 modifier = Modifier
-                    .size(80.dp)
+                    .size(60.dp)
                     .align(Alignment.Center),
                 onClick = {
-                    cameraViewModel.captureImage()
+                    if (cameraMode == CameraMode.VIDEO) {
+                        cameraViewModel.toggleRecord()
+                    } else {
+                        cameraViewModel.captureImage()
+                    }
                 }
             ) {
                 Icon(
-                    imageVector = Icons.Sharp.Lens,
+                    imageVector = if (isRecording) {
+                        Icons.Sharp.StopCircle
+                    } else {
+                        Icons.Sharp.Lens
+                    },
                     contentDescription = "Take picture",
-                    tint = Color.White,
+                    tint = if (cameraMode == CameraMode.VIDEO) {
+                        Color.Red
+                    } else {
+                        Color.White
+                    },
                     modifier = Modifier
                         .size(100.dp)
                         .padding(1.dp)
@@ -143,7 +165,7 @@ fun CameraView(
 
             IconButton(
                 modifier = Modifier
-                    .padding(start = 30.dp)
+                    .padding(start = 30.dp, bottom = 5.dp)
                     .size(60.dp)
                     .align(Alignment.CenterStart),
                 onClick = {
@@ -161,7 +183,7 @@ fun CameraView(
 
             IconButton(
                 modifier = Modifier
-                    .padding(end = 30.dp)
+                    .padding(end = 30.dp, bottom = 5.dp)
                     .size(60.dp)
                     .align(Alignment.CenterEnd),
                 onClick = { /*TODO*/ }
@@ -174,6 +196,26 @@ fun CameraView(
                         .size(60.dp)
                         .border(2.dp, Color.White, CircleShape)
                 )
+            }
+
+            var selectedTabPosition by remember { mutableIntStateOf(0) }
+            TabRow(
+                selectedTabPosition = selectedTabPosition,
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(bottom = 5.dp),
+                containerShape = RectangleShape,
+            ) {
+                cameraViewModel.getAvailableCameraModes().forEachIndexed { index, cameraMode ->
+                    TabTitle(
+                        title = stringResource(id = cameraMode.title),
+                        position = index,
+                        onClick = {
+                            selectedTabPosition = index
+                            cameraViewModel.setCameraMode(cameraMode)
+                        }
+                    )
+                }
             }
         }
 

@@ -4,6 +4,7 @@ import android.net.Uri
 import android.provider.MediaStore
 
 const val IMAGE_NAME_PREFIX = "IMG_"
+const val VIDEO_NAME_PREFIX = "VID_"
 
 val IMAGE_COLLECTION_URI: Uri = MediaStore.Images.Media.getContentUri(
     MediaStore.VOLUME_EXTERNAL_PRIMARY

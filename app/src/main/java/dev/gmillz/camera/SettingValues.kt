@@ -1,6 +1,7 @@
 package dev.gmillz.camera
 
 import androidx.camera.core.ImageCapture
+import androidx.camera.video.Quality
 
 
 object SettingValues {
@@ -16,5 +17,6 @@ object SettingValues {
     object Default {
         const val FLASH_MODE = ImageCapture.FLASH_MODE_OFF
         const val MAXIMIZE_QUALITY = true
+        val VIDEO_QUALITY: Quality = Quality.HIGHEST
     }
 }

@@ -7,6 +7,7 @@ import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import dev.gmillz.camera.CamConfig
 import dev.gmillz.camera.capturer.ImageCapturer
+import dev.gmillz.camera.capturer.VideoCapturer
 import javax.inject.Singleton
 
 @Module
@@ -17,6 +18,12 @@ class AppModule {
     @Singleton
     fun providesImageCapturer(context: Application, camConfig: CamConfig): ImageCapturer {
         return ImageCapturer(context, camConfig)
+    }
+
+    @Provides
+    @Singleton
+    fun providesVideoCapturer(context: Application, camConfig: CamConfig): VideoCapturer {
+        return VideoCapturer(context, camConfig)
     }
 
     @Provides

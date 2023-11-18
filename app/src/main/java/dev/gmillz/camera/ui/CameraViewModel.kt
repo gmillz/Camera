@@ -7,12 +7,15 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dev.gmillz.camera.CamConfig
+import dev.gmillz.camera.CameraMode
 import dev.gmillz.camera.capturer.ImageCapturer
+import dev.gmillz.camera.capturer.VideoCapturer
 import javax.inject.Inject
 
 @HiltViewModel
 class CameraViewModel @Inject constructor(
     private val imageCapturer: ImageCapturer,
+    private val videoCapturer: VideoCapturer,
     private val camConfig: CamConfig
 ) : ViewModel() {
 
@@ -24,11 +27,17 @@ class CameraViewModel @Inject constructor(
 
     val flashMode: State<Int> = camConfig.flashModeState
     val maximizeQuality: State<Boolean> = camConfig.maximizeQualityState
+    val currentMode: State<CameraMode> = camConfig.currentModeState
+    val isRecording: State<Boolean> = videoCapturer.isRecording
 
     init {
         camConfig.lastCapturedItem.observeForever {
             _lastCapturedItemState.value = it
         }
+    }
+
+    fun setCameraMode(mode: CameraMode) {
+        camConfig.switchCameraMode(mode)
     }
 
     fun toggleSettingsOpen() {
@@ -37,6 +46,17 @@ class CameraViewModel @Inject constructor(
 
     fun captureImage() {
         imageCapturer.takePicture()
+    }
+
+    fun toggleRecord() {
+        if (camConfig.currentMode != CameraMode.VIDEO) {
+            return
+        }
+        if (videoCapturer.isRecording.value) {
+            videoCapturer.stopRecording()
+        } else {
+            videoCapturer.startRecording()
+        }
     }
 
     fun toggleCamera() {
@@ -49,6 +69,10 @@ class CameraViewModel @Inject constructor(
 
     fun toggleMaximizeQuality(maximizeQuality: Boolean) {
         camConfig.toggleMaximizeQuality(maximizeQuality)
+    }
+
+    fun getAvailableCameraModes(): List<CameraMode> {
+        return camConfig.availableModes()
     }
 
     fun initializeCamera(lifecycleOwner: LifecycleOwner, surfaceProvider: SurfaceProvider) {
