@@ -68,6 +68,7 @@ fun CameraView(
     val previewView = remember { PreviewView(context) }
 
     val settingsOpen by remember { cameraViewModel.settingsOpen }
+    val maximizeQuality by remember { cameraViewModel.maximizeQuality }
     val flashMode by remember { cameraViewModel.flashMode }
     val cameraMode by remember { cameraViewModel.currentMode }
     val isRecording by remember { cameraViewModel.isRecording }
@@ -315,7 +316,7 @@ fun CameraView(
                 )
 
                 RadioButton(
-                    selected = false,
+                    selected = maximizeQuality,
                     onClick = {
                         cameraViewModel.toggleMaximizeQuality(true)
                     }
@@ -328,7 +329,7 @@ fun CameraView(
                 )
 
                 RadioButton(
-                    selected = true,
+                    selected = !maximizeQuality,
                     onClick = {
                         cameraViewModel.toggleMaximizeQuality(false)
                     }
