@@ -1,5 +1,6 @@
 package dev.gmillz.camera
 
+import androidx.camera.core.AspectRatio
 import androidx.camera.core.ImageCapture
 import androidx.camera.video.Quality
 

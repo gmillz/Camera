@@ -1,6 +1,8 @@
 package dev.gmillz.camera.ui
 
+import androidx.camera.core.FocusMeteringAction
 import androidx.camera.core.Preview.SurfaceProvider
+import androidx.camera.core.SurfaceOrientedMeteringPointFactory
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.LifecycleOwner
@@ -39,6 +41,18 @@ class CameraViewModel @Inject constructor(
 
     fun setCameraMode(mode: CameraMode) {
         camConfig.switchCameraMode(mode)
+    }
+
+    fun startFocusAndMetering(x: Float, y: Float, width: Float, height: Float) {
+        val factory = SurfaceOrientedMeteringPointFactory(
+            width, height
+        )
+        camConfig.camera?.cameraControl?.startFocusAndMetering(
+            FocusMeteringAction.Builder(
+                factory.createPoint(x, y)
+            ).disableAutoCancel()
+                .build()
+        )
     }
 
     fun toggleSettingsOpen() {

@@ -1,5 +1,7 @@
 package dev.gmillz.camera.ui
 
+import android.util.Log
+import android.view.MotionEvent
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture
 import androidx.camera.view.PreviewView
@@ -36,15 +38,18 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.pointerInteropFilter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
@@ -54,9 +59,11 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import dev.gmillz.camera.CameraMode
+import dev.gmillz.camera.ui.components.FocusRing
 import dev.gmillz.camera.ui.components.TabRow
 import dev.gmillz.camera.ui.components.TabTitle
 
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun CameraView(
     cameraViewModel: CameraViewModel = hiltViewModel()
@@ -73,6 +80,8 @@ fun CameraView(
     val cameraMode by remember { cameraViewModel.currentMode }
     val isRecording by remember { cameraViewModel.isRecording }
     val elapsedTime by remember { cameraViewModel.elapsedTime }
+    var x by remember { mutableFloatStateOf(0f) }
+    var y by remember { mutableFloatStateOf(0f) }
 
     val settingButtonAlpha: Float by animateFloatAsState(
         targetValue = if (!settingsOpen) 1f else 0f,
@@ -92,6 +101,27 @@ fun CameraView(
         contentAlignment = Alignment.BottomCenter,
         modifier = Modifier
             .fillMaxSize()
+            .pointerInteropFilter {
+                Log.d("TEST", "pointerInteropFilter")
+                if (settingsOpen) {
+                    Log.d("TEST", "here")
+                    return@pointerInteropFilter false
+                }
+                if (it.action == MotionEvent.ACTION_UP) {
+                    y = it.y
+                    x = it.x
+                    cameraViewModel.startFocusAndMetering(
+                        it.x,
+                        it.y,
+                        previewView.width.toFloat(),
+                        previewView.height.toFloat()
+                    )
+                    return@pointerInteropFilter true
+                } else if (it.action == MotionEvent.ACTION_DOWN) {
+                    return@pointerInteropFilter true
+                }
+                false
+            }
             .clickable {
                 if (settingsOpen) {
                     cameraViewModel.toggleSettingsOpen()
@@ -102,6 +132,8 @@ fun CameraView(
             factory = { previewView },
             modifier = Modifier.fillMaxSize()
         )
+
+        FocusRing(x = x, y = y)
 
         Box(
             modifier = Modifier
@@ -165,22 +197,24 @@ fun CameraView(
                 )
             }
 
-            IconButton(
-                modifier = Modifier
-                    .padding(start = 30.dp, bottom = 5.dp)
-                    .size(60.dp)
-                    .align(Alignment.CenterStart),
-                onClick = {
-                    cameraViewModel.toggleCamera()
-                }
-            ) {
-                Icon(
-                    imageVector = Icons.Sharp.FlipCameraAndroid,
-                    tint = Color.White,
-                    contentDescription = null,
+            if (!isRecording) {
+                IconButton(
                     modifier = Modifier
+                        .padding(start = 30.dp, bottom = 5.dp)
                         .size(60.dp)
-                )
+                        .align(Alignment.CenterStart),
+                    onClick = {
+                        cameraViewModel.toggleCamera()
+                    }
+                ) {
+                    Icon(
+                        imageVector = Icons.Sharp.FlipCameraAndroid,
+                        tint = Color.White,
+                        contentDescription = null,
+                        modifier = Modifier
+                            .size(60.dp)
+                    )
+                }
             }
 
             IconButton(
@@ -188,16 +222,32 @@ fun CameraView(
                     .padding(end = 30.dp, bottom = 5.dp)
                     .size(60.dp)
                     .align(Alignment.CenterEnd),
-                onClick = { /*TODO*/ }
+                onClick = {
+                    if (!isRecording) {
+                        cameraViewModel.captureImage()
+                    }
+                }
             ) {
-                AsyncImage(
-                    model = cameraViewModel.lastCapturedItemState.value?.uri,
-                    contentDescription = null,
-                    modifier = Modifier
-                        .clip(CircleShape)
-                        .size(60.dp)
-                        .border(2.dp, Color.White, CircleShape)
-                )
+                if (isRecording) {
+                    Icon(
+                        imageVector = Icons.Sharp.Lens,
+                        contentDescription = "Take picture",
+                        tint = Color.White,
+                        modifier = Modifier
+                            .size(100.dp)
+                            .padding(1.dp)
+                            .border(2.dp, Color.White, CircleShape)
+                    )
+                } else {
+                    AsyncImage(
+                        model = cameraViewModel.lastCapturedItemState.value?.uri,
+                        contentDescription = null,
+                        modifier = Modifier
+                            .clip(CircleShape)
+                            .size(60.dp)
+                            .border(2.dp, Color.White, CircleShape)
+                    )
+                }
             }
 
             var selectedTabPosition by remember { mutableIntStateOf(0) }
@@ -243,8 +293,10 @@ fun CameraView(
         ) {
             Row(
                 modifier = Modifier
-                    .fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly
+                    .fillMaxWidth()
+                    .height(65.dp),
+                horizontalArrangement = Arrangement.SpaceEvenly,
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 /*IconButton(
                     onClick = { /*TODO*/ }
